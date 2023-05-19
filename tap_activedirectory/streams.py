@@ -16,7 +16,7 @@ from singer_sdk.helpers.jsonpath import extract_jsonpath
 class UsersStream(ActivedirectoryStream):
     """Define custom stream."""
     name = "users"
-    path = "/v1.0//users"
+    path = "/v1.0/users"
     primary_keys = ["id"]
     replication_key = None
 

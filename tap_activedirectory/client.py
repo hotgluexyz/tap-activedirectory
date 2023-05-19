@@ -11,6 +11,7 @@ from singer_sdk.streams import RESTStream
 
 from tap_activedirectory.auth import OAuth2Authenticator
 import re
+from singer_sdk.exceptions import FatalAPIError, RetriableAPIError
 
 
 SCHEMAS_DIR = Path(__file__).parent / Path("./schemas")
@@ -56,3 +57,14 @@ class ActivedirectoryStream(RESTStream):
         if self.add_params:
             params.update(self.add_params)
         return params
+    
+    def validate_response(self, response: requests.Response) -> None:
+        if (
+            response.status_code in self.extra_retry_statuses
+            or 500 <= response.status_code < 600
+        ):
+            msg = self.response_error_message(response)
+            raise RetriableAPIError(msg, response)
+        elif 400 <= response.status_code < 500 and response.status_code not in [403]:
+            msg = self.response_error_message(response)
+            raise FatalAPIError(msg)
