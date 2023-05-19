@@ -56,21 +56,13 @@ class AccountsStream(ActivedirectoryStream):
         th.Property("licensedUserCount", th.IntegerType),
         th.Property("activeUserCount", th.IntegerType),
         th.Property("maxScore", th.NumberType),
-        th.Property("averageComparativeScores", th.ObjectType(
-            th.Property("basis", th.StringType),
-            th.Property("averageScore", th.NumberType),
-        )),
-        th.Property("controlScores", th.ObjectType(
-            th.Property("controlCategory", th.StringType),
-            th.Property("controlName", th.StringType),
-            th.Property("description", th.StringType),
-            th.Property("score", th.NumberType),
-        )),
+        th.Property("averageComparativeScores", th.ArrayType(th.CustomType({"type": ["object", "string"]}))),
+        th.Property("controlScores", th.ArrayType(th.CustomType({"type": ["object", "string"]}))),
         th.Property("vendorInformation", th.ObjectType(
             th.Property("provider", th.StringType),
             th.Property("providerVersion", th.StringType),
             th.Property("subProvider", th.StringType),
-            th.Property("vendor", th.NumberType),
+            th.Property("vendor", th.StringType),
         )),
     ).to_dict()
 
