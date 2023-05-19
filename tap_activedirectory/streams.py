@@ -6,12 +6,17 @@ from typing import Any, Dict, Optional, Union, List, Iterable
 from singer_sdk import typing as th 
 
 from tap_activedirectory.client import ActivedirectoryStream
+import csv
+import requests
+import json
+from io import StringIO
+from singer_sdk.helpers.jsonpath import extract_jsonpath
 
 
 class UsersStream(ActivedirectoryStream):
     """Define custom stream."""
     name = "users"
-    path = "/users"
+    path = "/v1.0//users"
     primary_keys = ["id"]
     replication_key = None
 
@@ -29,11 +34,16 @@ class UsersStream(ActivedirectoryStream):
         th.Property("id", th.StringType),
     ).to_dict()
 
+    def get_child_context(self, record: dict, context: Optional[dict]) -> dict:
+        """Return a context dictionary for child streams."""
+        return {
+            "user_id": record["id"],
+        }
 
 class AccountsStream(ActivedirectoryStream):
     """Define custom stream."""
     name = "accounts"
-    path = "/security/secureScores"
+    path = "/v1.0/security/secureScores"
     primary_keys = ["id"]
     replication_key = None
     schema = th.PropertiesList(
@@ -61,5 +71,109 @@ class AccountsStream(ActivedirectoryStream):
             th.Property("providerVersion", th.StringType),
             th.Property("subProvider", th.StringType),
             th.Property("vendor", th.NumberType),
+        )),
+    ).to_dict()
+
+class ActivityStream(ActivedirectoryStream):
+    """Define custom stream."""
+    name = "activity"
+    path = "/v1.0/reports/getM365AppUserDetail(period='D180')"
+    primary_keys = ["userPrincipalName"]
+    replication_key = None
+    schema = th.PropertiesList(
+        th.Property("Report Refresh Date", th.DateTimeType),
+        th.Property("User Principal Name", th.StringType),
+        th.Property("Last Activation Date", th.DateTimeType),
+        th.Property("Last Activity Date", th.DateTimeType),
+        th.Property("Report Period", th.IntegerType),
+        th.Property("Windows", th.BooleanType),
+        th.Property("Mac", th.BooleanType),
+        th.Property("Mobile", th.BooleanType),
+        th.Property("Web", th.BooleanType),
+        th.Property("Outlook", th.BooleanType),
+        th.Property("Word", th.BooleanType),
+        th.Property("Excel", th.BooleanType),
+        th.Property("PowerPoint", th.BooleanType),
+        th.Property("OneNote", th.BooleanType),
+        th.Property("Teams", th.BooleanType),
+        th.Property("Outlook (Windows)", th.BooleanType),
+        th.Property("Word (Windows)", th.BooleanType),
+        th.Property("Excel (Windows)", th.BooleanType),
+        th.Property("PowerPoint (Windows)", th.BooleanType),
+        th.Property("OneNote (Windows)", th.BooleanType),
+        th.Property("Teams (Windows)", th.BooleanType),
+        th.Property("Outlook (Mac)", th.BooleanType),
+        th.Property("Word (Mac)", th.BooleanType),
+        th.Property("Excel (Mac)", th.BooleanType),
+        th.Property("PowerPoint (Mac)", th.BooleanType),
+        th.Property("OneNote (Mac)", th.BooleanType),
+        th.Property("Teams (Mac)", th.BooleanType),
+        th.Property("Outlook (Mobile)", th.BooleanType),
+        th.Property("Word (Mobile)", th.BooleanType),
+        th.Property("Excel (Mobile)", th.BooleanType),
+        th.Property("PowerPoint (Mobile)", th.BooleanType),
+        th.Property("OneNote (Mobile)", th.BooleanType),
+        th.Property("Teams (Mobile)", th.BooleanType),
+        th.Property("Outlook (Web)", th.BooleanType),
+        th.Property("Word (Web)", th.BooleanType),
+        th.Property("Excel (Web)", th.BooleanType),
+        th.Property("PowerPoint (Web)", th.BooleanType),
+        th.Property("OneNote (Web)", th.BooleanType),
+        th.Property("Teams (Web)", th.BooleanType),
+        
+    ).to_dict()
+
+    def parse_response(self, response: requests.Response) -> Iterable[dict]:
+        if response.status_code not in [404]:
+            reader = csv.DictReader(StringIO(response.text))
+            result_list = list(reader)
+            yield from extract_jsonpath(self.records_jsonpath, input=result_list)
+    
+    def get_next_page_token(
+        self, response: requests.Response, previous_token: Optional[Any]
+    ) -> Optional[Any]:
+        """Return a token for identifying next page or None if no more pages."""
+        return None
+
+class MFAStream(ActivedirectoryStream):
+    """Define custom stream."""
+    name = "MFA"
+    path = "/beta/reports/authenticationMethods/userRegistrationDetails"
+    primary_keys = ["id"]
+    replication_key = None
+    schema = th.PropertiesList(
+        th.Property("id", th.StringType),
+        th.Property("userPrincipalName", th.StringType),
+        th.Property("userDisplayName", th.StringType),
+        th.Property("isAdmin", th.BooleanType),
+        th.Property("isSsprRegistered", th.BooleanType),
+        th.Property("isSsprEnabled", th.BooleanType),
+        th.Property("isSsprCapable", th.BooleanType),
+        th.Property("isMfaRegistered", th.BooleanType),
+        th.Property("isMfaCapable", th.BooleanType),
+        th.Property("isPasswordlessCapable", th.BooleanType),
+        th.Property("methodsRegistered", th.ArrayType(th.StringType)),
+        th.Property("defaultMethod", th.StringType),
+        th.Property("userType", th.StringType),
+    ).to_dict()
+
+class LicensesStream(ActivedirectoryStream):
+    """Define custom stream."""
+    name = "licenses"
+    path = "/v1.0/users/{user_id}/licenseDetails"
+    primary_keys = ["id"]
+    replication_key = None
+    parent_stream_type = UsersStream
+    schema = th.PropertiesList(
+        th.Property("id", th.StringType),
+        th.Property("skuId", th.StringType),
+        th.Property("skuPartNumber", th.StringType),
+        th.Property("servicePlans", th.ArrayType(
+            th.ObjectType(
+                th.Property("servicePlanId", th.StringType),
+                th.Property("servicePlanName", th.StringType),
+                th.Property("provisioningStatus", th.StringType),
+                th.Property("appliesTo", th.StringType),
+            )
         )),
     ).to_dict()

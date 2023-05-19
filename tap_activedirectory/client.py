@@ -20,9 +20,10 @@ class ActivedirectoryStream(RESTStream):
     """Activedirectory stream class."""
 
 
-    url_base = "https://graph.microsoft.com/v1.0/"
+    url_base = "https://graph.microsoft.com"
 
     records_jsonpath = "$.value[*]"
+    add_params = None
 
     @property
     def authenticator(self) -> OAuth2Authenticator:
@@ -52,4 +53,6 @@ class ActivedirectoryStream(RESTStream):
         params: dict = {}
         if next_page_token:
             params["skiptoken"] = next_page_token
+        if self.add_params:
+            params.update(self.add_params)
         return params
