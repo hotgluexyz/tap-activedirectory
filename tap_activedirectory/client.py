@@ -11,6 +11,7 @@ from singer_sdk.streams import RESTStream
 
 from tap_activedirectory.auth import OAuth2Authenticator
 import re
+from singer_sdk.exceptions import FatalAPIError, RetriableAPIError
 
 
 SCHEMAS_DIR = Path(__file__).parent / Path("./schemas")
@@ -20,9 +21,10 @@ class ActivedirectoryStream(RESTStream):
     """Activedirectory stream class."""
 
 
-    url_base = "https://graph.microsoft.com/v1.0/"
+    url_base = "https://graph.microsoft.com"
 
     records_jsonpath = "$.value[*]"
+    add_params = None
 
     @property
     def authenticator(self) -> OAuth2Authenticator:
@@ -52,4 +54,17 @@ class ActivedirectoryStream(RESTStream):
         params: dict = {}
         if next_page_token:
             params["skiptoken"] = next_page_token
+        if self.add_params:
+            params.update(self.add_params)
         return params
+    
+    def validate_response(self, response: requests.Response) -> None:
+        if (
+            response.status_code in self.extra_retry_statuses
+            or 500 <= response.status_code < 600
+        ):
+            msg = self.response_error_message(response)
+            raise RetriableAPIError(msg, response)
+        elif 400 <= response.status_code < 500 and response.status_code not in [403]:
+            msg = self.response_error_message(response)
+            raise FatalAPIError(msg)
