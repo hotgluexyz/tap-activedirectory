@@ -40,9 +40,9 @@ class UsersStream(ActivedirectoryStream):
             "user_id": record["id"],
         }
 
-class AccountsStream(ActivedirectoryStream):
+class SecureScoreStream(ActivedirectoryStream):
     """Define custom stream."""
-    name = "accounts"
+    name = "secure_score"
     path = "/v1.0/security/secureScores"
     primary_keys = ["id"]
     replication_key = None
@@ -64,6 +64,28 @@ class AccountsStream(ActivedirectoryStream):
             th.Property("subProvider", th.StringType),
             th.Property("vendor", th.StringType),
         )),
+    ).to_dict()
+
+class AccountStream(ActivedirectoryStream):
+    """Define custom stream."""
+    name = "account"
+    path = "/v1.0/me"
+    primary_keys = ["id"]
+    replication_key = None
+    records_jsonpath = "$.[*]"
+    schema = th.PropertiesList(
+        th.Property("@odata.context", th.StringType),
+        th.Property("businessPhones", th.ArrayType(th.StringType)),
+        th.Property("displayName", th.StringType),
+        th.Property("givenName", th.StringType),
+        th.Property("jobTitle", th.StringType),
+        th.Property("mail", th.StringType),
+        th.Property("mobilePhone", th.StringType),
+        th.Property("officeLocation", th.StringType),
+        th.Property("preferredLanguage", th.StringType),
+        th.Property("surname", th.StringType),
+        th.Property("userPrincipalName", th.StringType),
+        th.Property("id", th.StringType),
     ).to_dict()
 
 class ActivityStream(ActivedirectoryStream):
@@ -158,6 +180,7 @@ class LicensesStream(ActivedirectoryStream):
     parent_stream_type = UsersStream
     schema = th.PropertiesList(
         th.Property("id", th.StringType),
+        th.Property("user_id", th.StringType),
         th.Property("skuId", th.StringType),
         th.Property("skuPartNumber", th.StringType),
         th.Property("servicePlans", th.ArrayType(
