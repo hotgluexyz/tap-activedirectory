@@ -6,18 +6,20 @@ from singer_sdk import Tap, Stream
 from singer_sdk import typing as th 
 from tap_activedirectory.streams import (
     UsersStream,
-    AccountsStream,
     LicensesStream,
     MFAStream,
-    ActivityStream
+    ActivityStream,
+    AccountStream,
+    SecureScoreStream
 )
 
 STREAM_TYPES = [
     UsersStream,
-    AccountsStream,
     LicensesStream,
     MFAStream,
-    ActivityStream
+    ActivityStream,
+    AccountStream,
+    SecureScoreStream
 ]
 
 
