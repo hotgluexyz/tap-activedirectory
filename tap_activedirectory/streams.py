@@ -101,12 +101,13 @@ class ActivityStream(ActivedirectoryStream):
     path = "/v1.0/reports/getM365AppUserDetail(period='D180')"
     primary_keys = ["userPrincipalName"]
     replication_key = None
+    records_jsonpath = "$.activities[*]"
     schema = th.PropertiesList(
         th.Property("Report Refresh Date", th.DateTimeType),
         th.Property("User Principal Name", th.StringType),
         th.Property("Last Activation Date", th.DateTimeType),
         th.Property("Last Activity Date", th.DateTimeType),
-        th.Property("Report Period", th.IntegerType),
+        th.Property("Report Period", th.StringType),
         th.Property("Windows", th.BooleanType),
         th.Property("Mac", th.BooleanType),
         th.Property("Mobile", th.BooleanType),
@@ -148,6 +149,7 @@ class ActivityStream(ActivedirectoryStream):
         if response.status_code not in [404]:
             reader = csv.DictReader(StringIO(response.text))
             result_list = list(reader)
+            result_list = {"activities": result_list}
             yield from extract_jsonpath(self.records_jsonpath, input=result_list)
     
     def get_next_page_token(
