@@ -20,7 +20,7 @@ class UsersStream(ActivedirectoryStream):
     primary_keys = ["id"]
     replication_key = None
     add_params = {
-        '$select' : 'businessPhones, displayName, givenName, jobTitle, mail, mobilePhone, officeLocation, preferredLanguage, surname, userPrincipalName, id, streetAddress, city, state, postalCode, country'
+        '$select' : 'businessPhones, displayName, givenName, jobTitle, mail, mobilePhone, officeLocation, preferredLanguage, surname, userPrincipalName, id, streetAddress, city, state, postalCode, country, userType, department'
     }
     schema = th.PropertiesList(
         th.Property("businessPhones", th.ArrayType(th.CustomType({"type": ["object", "string"]}))),
@@ -39,6 +39,8 @@ class UsersStream(ActivedirectoryStream):
         th.Property("state", th.StringType),
         th.Property("postalCode", th.StringType),
         th.Property("country", th.StringType),
+        th.Property("userType", th.StringType),
+        th.Property("department", th.StringType),
     ).to_dict()
 
     def get_child_context(self, record: dict, context: Optional[dict]) -> dict:
