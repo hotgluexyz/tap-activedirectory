@@ -48,6 +48,15 @@ class UsersStream(ActivedirectoryStream):
         return {
             "user_id": record["id"],
         }
+    
+    def get_url_params(
+        self, context: Optional[dict], next_page_token: Optional[Any]
+    ) -> Dict[str, Any]:
+        params: dict = {}
+        params["$top"] = 999
+        if self.add_params:
+            params.update(self.add_params)
+        return params
 
 class SecureScoreStream(ActivedirectoryStream):
     """Define custom stream."""
@@ -163,7 +172,7 @@ class ActivityStream(ActivedirectoryStream):
 class MFAStream(ActivedirectoryStream):
     """Define custom stream."""
     name = "MFA"
-    path = "/beta/reports/authenticationMethods/userRegistrationDetails"
+    path = "/v1.0/reports/authenticationMethods/userRegistrationDetails"
     primary_keys = ["id"]
     replication_key = None
     schema = th.PropertiesList(
