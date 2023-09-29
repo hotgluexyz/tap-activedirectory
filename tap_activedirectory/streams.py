@@ -20,7 +20,8 @@ class UsersStream(ActivedirectoryStream):
     primary_keys = ["id"]
     replication_key = None
     add_params = {
-        '$select' : 'businessPhones, displayName, givenName, jobTitle, mail, mobilePhone, officeLocation, preferredLanguage, surname, userPrincipalName, id, streetAddress, city, state, postalCode, country, userType, department'
+        '$select' : 'businessPhones, displayName, givenName, jobTitle, mail, mobilePhone, officeLocation, preferredLanguage, surname, userPrincipalName, id, streetAddress, city, state, postalCode, country, userType, department',
+        "$top": 999
     }
     schema = th.PropertiesList(
         th.Property("businessPhones", th.ArrayType(th.CustomType({"type": ["object", "string"]}))),
@@ -48,15 +49,6 @@ class UsersStream(ActivedirectoryStream):
         return {
             "user_id": record["id"],
         }
-    
-    def get_url_params(
-        self, context: Optional[dict], next_page_token: Optional[Any]
-    ) -> Dict[str, Any]:
-        params: dict = {}
-        params["$top"] = 999
-        if self.add_params:
-            params.update(self.add_params)
-        return params
 
 class SecureScoreStream(ActivedirectoryStream):
     """Define custom stream."""
