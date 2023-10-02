@@ -44,7 +44,9 @@ class ActivedirectoryStream(RESTStream):
     ) -> Optional[Any]:
         """Return a token for identifying next page or None if no more pages."""
         if response.json().get("@odata.nextLink"):
-            return re.search("skiptoken=(.*)&", response.json().get("@odata.nextLink"))
+            next_page_token = re.findall("skiptoken=(.*)", response.json().get("@odata.nextLink"))
+            if next_page_token:
+                return next_page_token
         return None
 
     def get_url_params(
@@ -53,7 +55,7 @@ class ActivedirectoryStream(RESTStream):
         """Return a dictionary of values to be used in URL parameterization."""
         params: dict = {}
         if next_page_token:
-            params["skiptoken"] = next_page_token
+            params["$skiptoken"] = next_page_token
         if self.add_params:
             params.update(self.add_params)
         return params
