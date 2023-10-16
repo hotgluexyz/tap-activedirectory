@@ -12,6 +12,7 @@ from singer_sdk.streams import RESTStream
 from tap_activedirectory.auth import OAuth2Authenticator
 import re
 from singer_sdk.exceptions import FatalAPIError, RetriableAPIError
+from urllib.parse import urlparse, parse_qs
 
 
 SCHEMAS_DIR = Path(__file__).parent / Path("./schemas")
@@ -44,9 +45,19 @@ class ActivedirectoryStream(RESTStream):
     ) -> Optional[Any]:
         """Return a token for identifying next page or None if no more pages."""
         if response.json().get("@odata.nextLink"):
-            next_page_token = re.findall("skiptoken=(.*)", response.json().get("@odata.nextLink"))
-            if next_page_token:
-                return next_page_token
+            next_page_link = response.json().get("@odata.nextLink")
+            if next_page_link:
+                # Parse the URL
+                parsed_url = urlparse(next_page_link)
+                # Extract the query parameters
+                query_params = parse_qs(parsed_url.query)
+                skiptoken_value = query_params.get('$skiptoken')
+                # If $skiptoken exists, get its first value (as it can be a list)
+                if skiptoken_value:
+                    if len(skiptoken_value)>0:
+                        next_page_token = skiptoken_value[0]
+                if next_page_token:
+                    return next_page_token
         return None
 
     def get_url_params(
