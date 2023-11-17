@@ -204,3 +204,49 @@ class LicensesStream(ActivedirectoryStream):
             )
         )),
     ).to_dict()
+    
+class DevicesStream(ActivedirectoryStream):
+    """Define custom stream."""
+    name = "devices"
+    path = "/v1.0/users/{user_id}/ownedDevices"
+    primary_keys = ["id"]
+    replication_key = None
+    parent_stream_type = UsersStream
+    schema = th.PropertiesList(
+        th.Property("id", th.StringType),
+        th.Property("user_id", th.StringType),
+        th.Property("deletedDateTime", th.DateTimeType),
+        th.Property("accountEnabled", th.StringType),
+        th.Property("approximateLastSignInDateTime", th.DateTimeType),
+        th.Property("complianceExpirationDateTime", th.DateTimeType),
+        th.Property("createdDateTime", th.DateTimeType),
+        th.Property("deviceCategory", th.StringType),
+        th.Property("deviceId", th.StringType),
+        th.Property("deviceMetadata", th.CustomType({"type": ["object", "string"]})),
+        th.Property("deviceOwnership", th.StringType),
+        th.Property("deviceVersion", th.StringType),
+        th.Property("displayName", th.StringType),
+        th.Property("domainName", th.StringType),
+        th.Property("enrollmentProfileName", th.StringType),
+        th.Property("enrollmentType", th.StringType),
+        th.Property("externalSourceName", th.StringType),
+        th.Property("isCompliant", th.StringType),
+        th.Property("isManaged", th.StringType),
+        th.Property("isRooted", th.StringType),
+        th.Property("managementType", th.StringType),
+        th.Property("manufacturer", th.StringType),
+        th.Property("mdmAppId", th.StringType),
+        th.Property("model", th.StringType),
+        th.Property("onPremisesLastSyncDateTime", th.DateTimeType),
+        th.Property("onPremisesSyncEnabled", th.StringType),
+        th.Property("operatingSystem", th.StringType),
+        th.Property("operatingSystemVersion", th.StringType),
+        th.Property("physicalIds", th.ArrayType(th.StringType)),
+        th.Property("profileType", th.StringType),
+        th.Property("registrationDateTime", th.DateTimeType),
+        th.Property("sourceType", th.StringType),
+        th.Property("systemLabels", th.ArrayType(th.StringType)),
+        th.Property("trustType", th.StringType),
+        th.Property("extensionAttributes", th.CustomType({"type": ["object", "string"]})),
+        th.Property("alternativeSecurityIds", th.ArrayType(th.StringType)),
+    ).to_dict()

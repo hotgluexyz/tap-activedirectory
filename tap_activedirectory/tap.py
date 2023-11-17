@@ -10,7 +10,8 @@ from tap_activedirectory.streams import (
     MFAStream,
     ActivityStream,
     AccountStream,
-    SecureScoreStream
+    SecureScoreStream,
+    DevicesStream
 )
 
 STREAM_TYPES = [
@@ -19,7 +20,8 @@ STREAM_TYPES = [
     MFAStream,
     ActivityStream,
     AccountStream,
-    SecureScoreStream
+    SecureScoreStream,
+    DevicesStream
 ]
 
 
