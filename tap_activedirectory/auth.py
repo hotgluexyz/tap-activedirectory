@@ -62,6 +62,12 @@ class OAuth2Authenticator(APIAuthenticatorBase):
         ):
             return None
 
+        if token_response.status_code == 400:
+            error_msg = token_response.json().get("error_description")
+            raise RuntimeError(
+                f"Failed OAuth login, error was: {error_msg}."
+            )
+
         try:
             token_response.raise_for_status()
             self.logger.info("OAuth authorization attempt was successful.")
