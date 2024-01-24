@@ -62,7 +62,7 @@ class OAuth2Authenticator(APIAuthenticatorBase):
         ):
             return None
 
-        if token_response.status_code == 400:
+        if token_response.status_code >= 400 and token_response.status_code < 500:
             error_msg = token_response.json().get("error_description")
             raise RuntimeError(
                 f"Failed OAuth login, error was: {error_msg}."
